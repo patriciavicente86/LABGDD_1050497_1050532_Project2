@@ -1,0 +1,30 @@
+# Core Big Data
+pyspark==3.5.1
+pyyaml
+pandas
+pyarrow
+
+# Visualization
+jupyterlab
+matplotlib
+seaborn
+plotly
+
+# Machine Learning (Spark MLlib already included in PySpark)
+scikit-learn
+
+# Deep Learning (GPU support)
+tensorflow>=2.15.0
+keras
+
+# Testing
+pytest
+pytest-cov
+great-expectations
+
+# Data Quality
+pydantic
+
+# Performance monitoring
+py-cpuinfo
+psutil
