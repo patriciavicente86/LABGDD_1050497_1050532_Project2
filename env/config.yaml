@@ -1,0 +1,295 @@
+# NYC Taxi Big Data Pipeline Configuration
+# LABGDD Project 2 - Configuration File
+
+# Data paths
+paths:
+  # Data lake layers (Medallion architecture)
+  lake: "lake"
+  bronze: "lake/bronze"
+  silver: "lake/silver"
+  gold: "lake/gold"
+  
+  # Raw data input
+  data: "data"
+  
+  # Streaming data (Kappa architecture)
+  bronze_stream: "lake/bronze_stream"
+  gold_stream: "lake/gold_streaming"
+  
+  # Model artifacts
+  models: "models"
+  
+  # Reports and visualizations
+  reports: "reports"
+  
+  # Temporary files and checkpoints
+  checkpoints: "checkpoints"
+  tmp: "tmp"
+
+# Services to process
+services:
+  - yellow
+  - green
+
+# Years to process
+years:
+  - 2024
+  - 2025
+
+# Months to process (1-12, empty means all)
+months: []
+
+# Data Quality Thresholds
+data_quality:
+  # Trip duration (minutes)
+  min_trip_duration: 1
+  max_trip_duration: 180  # 3 hours
+  
+  # Trip distance (miles)
+  min_trip_distance: 0.1
+  max_trip_distance: 100
+  
+  # Fare amount (USD)
+  min_fare: 0.1
+  max_fare: 500
+  
+  # Passenger count
+  min_passengers: 1
+  max_passengers: 6
+  
+  # Valid location IDs (NYC taxi zones)
+  min_location_id: 1
+  max_location_id: 263
+  
+  # Trip speed (mph) - for outlier detection
+  min_avg_speed: 0.5
+  max_avg_speed: 80
+
+# Apache Spark Configuration
+spark:
+  # Application name
+  app_name: "NYC_Taxi_BigData_Pipeline"
+  
+  # Master (local[*] for all cores, local[4] for 4 cores, etc.)
+  master: "local[*]"
+  
+  # Memory settings
+  driver_memory: "4g"
+  executor_memory: "4g"
+  
+  # Shuffle partitions (adjust based on data size)
+  shuffle_partitions: 200
+  
+  # Adaptive query execution
+  adaptive_execution: true
+  
+  # Broadcast join threshold (10MB)
+  broadcast_threshold: 10485760
+  
+  # Streaming settings
+  streaming:
+    max_files_per_trigger: 1
+    trigger_interval: "10 seconds"
+
+# Machine Learning Configuration (Spark MLlib)
+ml:
+  # Train/test split ratio
+  test_split: 0.2
+  
+  # Random seed for reproducibility
+  random_seed: 42
+  
+  # Models to train
+  models:
+    - linear_regression
+    - random_forest
+    - gradient_boosted_trees
+  
+  # Random Forest hyperparameters
+  random_forest:
+    num_trees: 50
+    max_depth: 10
+    min_instances_per_node: 5
+  
+  # Gradient Boosted Trees hyperparameters
+  gbt:
+    max_iter: 50
+    max_depth: 5
+    step_size: 0.1
+  
+  # Feature columns
+  feature_columns:
+    - hour
+    - day_of_week
+    - month
+    - day_of_month
+    - prev_hour_demand
+    - prev_2hour_demand
+    - prev_day_demand
+    - avg_distance
+    - avg_fare
+    - avg_duration
+  
+  # Target column
+  label_column: "trip_count"
+  
+  # Performance thresholds
+  min_r2_score: 0.80
+  max_acceptable_rmse: 25.0
+
+# Deep Learning Configuration (TensorFlow)
+dl:
+  # Use GPU if available
+  use_gpu: true
+  
+  # LSTM architecture
+  lookback: 24  # hours of historical data
+  forecast_horizon: 1  # hours to predict ahead
+  
+  # Training hyperparameters
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  validation_split: 0.2
+  
+  # Early stopping patience
+  early_stopping_patience: 10
+  
+  # Learning rate reduction
+  reduce_lr_patience: 5
+  reduce_lr_factor: 0.5
+  
+  # Model architecture
+  lstm_units_1: 128
+  lstm_units_2: 64
+  dense_units: 32
+  dropout_rate: 0.2
+  
+  # Zone to model (default: 237 = Upper East Side)
+  default_zone: 237
+  
+  # Performance thresholds
+  min_r2_score: 0.85
+  max_acceptable_rmse: 20.0
+
+# Testing Configuration
+testing:
+  # Pytest settings
+  verbose: true
+  coverage_threshold: 80  # percent
+  
+  # Test data sample size
+  sample_size: 10000
+  
+  # Data quality tests
+  run_data_quality_tests: true
+  
+  # Model validation tests
+  run_model_tests: true
+  
+  # Integration tests
+  run_integration_tests: true
+
+# Benchmarking Configuration
+benchmarking:
+  # Enable performance benchmarking
+  enabled: true
+  
+  # Number of runs for averaging
+  num_runs: 3
+  
+  # Benchmark workloads
+  workloads:
+    - silver_processing
+    - gold_aggregation
+    - ml_training
+    - dl_training
+    - dl_inference
+  
+  # CPU vs GPU comparison
+  compare_cpu_gpu: true
+  
+  # Output path
+  output_path: "benchmarks/results.json"
+
+# Reporting Configuration
+reporting:
+  # Generate figures
+  generate_figures: true
+  
+  # Figure output format
+  figure_format: "png"
+  figure_dpi: 300
+  
+  # Metrics to report
+  metrics:
+    - row_counts
+    - data_quality
+    - model_performance
+    - processing_time
+    - lambda_kappa_comparison
+  
+  # Output paths
+  figures_path: "reports/figures"
+  tables_path: "reports/tables"
+  metrics_path: "reports/metrics.json"
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log files
+  pipeline_log: "logs/pipeline.log"
+  ml_log: "logs/ml.log"
+  dl_log: "logs/dl.log"
+  test_log: "logs/test.log"
+
+# Lambda vs Kappa Comparison
+comparison:
+  # Run comparison
+  enabled: true
+  
+  # Metrics to compare
+  metrics:
+    - freshness
+    - accuracy
+    - throughput
+    - latency
+    - complexity
+  
+  # Tolerance for accuracy comparison (percentage)
+  accuracy_tolerance: 1.0
+
+# Optimization Settings
+optimization:
+  # Coalesce output files
+  coalesce_gold: true
+  coalesce_partitions: 4
+  
+  # Cache frequently used dataframes
+  enable_caching: true
+  
+  # Persist checkpoints
+  persist_checkpoints: true
+  
+  # Compression codec (snappy, gzip, lz4)
+  compression: "snappy"
+
+# Development/Production Mode
+mode: "development"  # development or production
+
+# Production-specific settings
+production:
+  # Data retention (days)
+  bronze_retention: 365
+  silver_retention: 180
+  gold_retention: 90
+  
+  # Monitoring
+  enable_monitoring: true
+  alert_on_failure: true
+  
+  # Backup
+  enable_backup: true
+  backup_interval: "daily"
