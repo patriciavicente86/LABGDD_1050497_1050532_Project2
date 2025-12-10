@@ -3,36 +3,72 @@
 > **LABGDD Project 2**: Big Data pipeline with **Machine Learning**, **Deep Learning (GPU)**, and comprehensive **testing framework**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://python.org)
-[![PySpark](https://img.shields.io/badge/PySpark-3.5.1-orange)](https://spark.apache.org)
+[![PySpark](https://img.shields.io/badge/PySpark-3.5%2B-orange)](https://spark.apache.org)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15%2B-ff6f00)](https://tensorflow.org)
 [![Tests](https://img.shields.io/badge/Tests-Pytest-green)](https://pytest.org)
 
 ---
 
-## 🎯 Project Objectives
+## 🎯 Project Overview
 
-### From Project 1 → Project 2
-**Project 1**: Lambda vs Kappa comparison for Big Data processing  
-**Project 2**: **Complete ML/DL pipeline** with validation, testing, and GPU acceleration
+This project extends **Project 1** (Lambda vs Kappa architecture comparison) with:
 
-### New Features
-- ✅ **Machine Learning** (Spark MLlib): Random Forest, GBT, Linear Regression
+- ✅ **Machine Learning** (Spark MLlib): Random Forest, GBT, Linear Regression for demand forecasting
 - ✅ **Deep Learning** (TensorFlow + GPU): LSTM time series forecasting  
-- ✅ **Testing Framework**: Unit + Integration + Data Quality tests (**30% grade**)
+- ✅ **Testing Framework**: Unit + Integration + Data Quality tests (**30% of grade**)
 - ✅ **Performance Benchmarks**: CPU vs GPU, ML vs DL comparisons
 - ✅ **Topics Integration**: Parallel Computing, GPU Computing, Cloud Architecture
 
 ---
 
-## 📋 Quick Links
+## 📁 Project Structure
 
-- [Architecture](#-architecture)
-- [Setup](#-setup)
-- [Usage](#-usage)
-- [Machine Learning](#-machine-learning)
-- [Deep Learning](#-deep-learning)
-- [Testing](#-testing)
-- [Results](#-results)
+```
+LABGDD_1050497_1050532_Project2/
+├── src/                       # Core pipeline (inherited from Project 1)
+│   ├── clean_to_silver.py     # Bronze → Silver transformation
+│   ├── features_to_gold.py    # Silver → Gold feature engineering
+│   ├── kappa_driver.py        # Streaming pipeline (Kappa)
+│   ├── lambda_driver.py       # Batch pipeline (Lambda)
+│   ├── compare_lambda_kappa.py# Lambda vs Kappa comparison
+│   ├── metrics.py             # Pipeline metrics and reports
+│   ├── figures.py             # Visualization generation
+│   ├── ingest_bronze.py       # Raw data ingestion
+│   └── probe_stream.py        # Streaming data probe
+├── ml/                        # Machine Learning module
+│   └── demand_forecasting.py  # Spark MLlib models
+├── dl/                        # Deep Learning module
+│   └── lstm_forecaster.py     # TensorFlow LSTM model
+├── tests/                     # Testing framework (30% grade!)
+│   ├── conftest.py            # Pytest configuration
+│   ├── test_pipeline.py       # Unit tests
+│   └── test_integration.py    # Integration tests
+├── benchmarks/                # Performance benchmarks
+│   └── performance_benchmark.py
+├── notebooks/                 # Jupyter notebooks
+│   └── NYC_Taxi_Report.ipynb
+├── data/                      # Raw data (parquet files)
+│   ├── yellow/2024/
+│   └── green/2024/
+├── lake/                      # Data lake (Bronze/Silver/Gold)
+│   ├── bronze/
+│   ├── silver/
+│   └── gold/
+├── docker/                    # Container configuration
+│   ├── Dockerfile
+│   └── requirements.txt
+├── env/                       # Configuration
+│   └── config.yaml            # Unified config (paths, ML, DL, tests)
+├── make/                      # Makefile modules
+│   ├── pipeline.mk            # Pipeline targets
+│   ├── ml.mk                  # ML/DL/test targets
+│   ├── ingest.mk
+│   ├── bench.mk
+│   └── validate.mk
+├── Makefile                   # Main makefile
+├── pytest.ini                 # Pytest configuration
+└── README.md
+```
 
 ---
 
@@ -53,48 +89,21 @@ NYC Taxi Data (37M+ trips)
     │   Gold  │  Analytics-ready features
     └────┬────┘
          │
-         ├──────────┬──────────┐
-         │          │          │
-    ┌────▼────┐ ┌──▼───┐ ┌────▼────┐
-    │ Spark   │ │ LSTM │ │  Tests  │
-    │ MLlib   │ │ (GPU)│ │  (30%)  │
-    │  (CPU)  │ │      │ │         │
-    └─────────┘ └──────┘ └─────────┘
-```
-
-**Architectures Implemented:**
-- **Lambda**: Batch processing (Bronze → Silver → Gold)
-- **Kappa**: Streaming with Structured Streaming
-- **ML/DL**: Predictive analytics layer on top of both
-
----
-
-## 📁 Project Structure
-
-```
-LABGDD_1050497_1050532_Project2/
-├── src/                   # Core pipeline (from Project 1)
-│   ├── clean_to_silver.py
-│   ├── features_to_gold.py
-│   ├── lambda_driver.py
-│   └── kappa_driver.py
-├── ml/                    # 🆕 Machine Learning
-│   └── demand_forecasting.py
-├── dl/                    # 🆕 Deep Learning
-│   └── lstm_forecaster.py
-├── tests/                 # 🆕 Testing (30% grade!)
-│   ├── test_pipeline.py
-│   └── test_integration.py
-├── models/                # 🆕 Trained models
-├── benchmarks/            # 🆕 Performance tests
-├── notebooks/
-│   └── ML_DL_Analysis.ipynb
-├── docker/
-│   ├── Dockerfile
-│   └── requirements.txt   # Extended with ML/DL libs
-├── pytest.ini
-├── Makefile               # Updated targets
-└── README.md
+    ┌────┴────────────────┐
+    │                     │
+┌───▼────┐           ┌────▼────┐
+│ Lambda │           │  Kappa  │
+│ (Batch)│           │(Stream) │
+└───┬────┘           └────┬────┘
+    │                     │
+    └──────────┬──────────┘
+               │
+    ┌──────────┴──────────┐
+    │                     │
+┌───▼────┐           ┌────▼────┐
+│ Spark  │           │  LSTM   │
+│ MLlib  │           │  (GPU)  │
+└────────┘           └─────────┘
 ```
 
 ---
@@ -103,22 +112,26 @@ LABGDD_1050497_1050532_Project2/
 
 ### Prerequisites
 - Python 3.10+
-- PySpark 3.5.1
-- CUDA 11.8+ (optional, for GPU)
-- Docker (recommended)
+- PySpark 3.5+
+- TensorFlow 2.15+ (optional, for DL)
+- CUDA 11.8+ (optional, for GPU acceleration)
 
 ### Installation
 
 ```bash
-cd Assignment_2/LABGDD_1050497_1050532_Project2
+cd LABGDD_1050497_1050532_Project2
 
 # Install dependencies
 pip install -r docker/requirements.txt
 ```
 
-### Check GPU (for Deep Learning)
+### Verify Installation
 
 ```bash
+# Check Spark
+python -c "from pyspark.sql import SparkSession; print('Spark OK')"
+
+# Check TensorFlow (optional)
 python -c "import tensorflow as tf; print('GPU:', tf.config.list_physical_devices('GPU'))"
 ```
 
@@ -126,47 +139,87 @@ python -c "import tensorflow as tf; print('GPU:', tf.config.list_physical_device
 
 ## 🚀 Usage
 
-### Complete Pipeline
+### Quick Start (Data Already Processed)
+
+If you have the `lake/` folder with processed data:
 
 ```bash
-make all              # Run everything: pipeline + ML + DL + tests
+# Check pipeline metrics
+make metrics
+
+# Generate figures
+make figures
+
+# Run ML models
+make ml
+
+# Run DL model (GPU recommended)
+make dl
+
+# Run all tests
+make test
 ```
 
-### Step-by-Step
+### Full Pipeline (From Scratch)
 
 ```bash
-# 1. Data processing (Lambda)
-make silver           # Bronze → Silver (cleaning)
-make gold             # Silver → Gold (features)
+# 1. Ingest raw data to Bronze
+make ingest
 
-# 2. Machine Learning
-make ml               # Train Spark MLlib models
+# 2. Clean and transform to Silver
+make silver
 
-# 3. Deep Learning  
-make dl               # Train LSTM (GPU)
+# 3. Feature engineering to Gold
+make gold
 
-# 4. Testing
-make test             # Run all tests
+# 4. Train ML models
+make ml
 
-# 5. Reports
-make reports          # Generate figures and metrics
+# 5. Train DL model
+make dl
+
+# 6. Run tests
+make test
+```
+
+### Lambda vs Kappa Comparison
+
+```bash
+# Start Kappa streaming (in separate terminal)
+make kappa_start
+
+# Seed data to streaming path
+make kappa_seed
+
+# Compare results
+make compare
 ```
 
 ---
 
 ## 🤖 Machine Learning
 
-### Algorithms
-1. **Random Forest**: Ensemble, robust, feature importance
-2. **Gradient Boosting**: Best accuracy, sequential ensemble
-3. **Linear Regression**: Baseline, fast, interpretable
+### Models Implemented
 
-### Features
-- **Temporal**: hour, day_of_week, month
-- **Lag**: prev_hour_demand, prev_2hour_demand, prev_day_demand
-- **Metrics**: avg_distance, avg_fare, avg_duration
+| Model | Algorithm | Library |
+|-------|-----------|---------|
+| Linear Regression | OLS | Spark MLlib |
+| Random Forest | Ensemble | Spark MLlib |
+| Gradient Boosted Trees | Boosting | Spark MLlib |
+
+### Features Used
+
+- **Temporal**: hour, day_of_week, month, day_of_month
+- **Lag Features**: prev_hour_demand, prev_2hour_demand, prev_day_demand
+- **Trip Metrics**: avg_distance, avg_fare, avg_duration
 
 ### Run ML Pipeline
+
+```bash
+make ml
+```
+
+Or programmatically:
 
 ```python
 from ml.demand_forecasting import DemandForecaster
@@ -174,34 +227,43 @@ from ml.demand_forecasting import DemandForecaster
 forecaster = DemandForecaster()
 results = forecaster.run_pipeline()
 
-# Compare models
 for name, metrics in results.items():
     print(f"{name}: RMSE={metrics['rmse']:.2f}, R²={metrics['r2']:.4f}")
 ```
-
-### Expected Performance
-| Model | RMSE | R² | Training Time |
-|-------|------|-----|---------------|
-| Linear Regression | 22 | 0.78 | 30 sec |
-| Random Forest | 17 | 0.88 | 5 min |
-| GBT | **15** | **0.91** | 8 min |
 
 ---
 
 ## 🧠 Deep Learning
 
 ### LSTM Architecture
+
 ```
-Input (24 timesteps) → LSTM(128) → Dropout(0.2) 
-→ LSTM(64) → Dropout(0.2) → Dense(32) → Dense(1)
+Input (24 hours) → LSTM(128) → Dropout(0.2) 
+                → LSTM(64)  → Dropout(0.2) 
+                → Dense(32) → Dense(1) → Output
 ```
 
-### Features
-- **GPU Acceleration**: 10x faster training
-- **Early Stopping**: Prevents overfitting
-- **Adaptive LR**: Better convergence
+### Configuration (from `env/config.yaml`)
+
+```yaml
+dl:
+  use_gpu: true
+  lookback: 24
+  epochs: 50
+  batch_size: 32
+  lstm_units_1: 128
+  lstm_units_2: 64
+  dropout_rate: 0.2
+  early_stopping_patience: 10
+```
 
 ### Run DL Pipeline
+
+```bash
+make dl
+```
+
+Or programmatically:
 
 ```python
 from dl.lstm_forecaster import LSTMDemandForecaster
@@ -212,131 +274,122 @@ metrics = forecaster.run_pipeline(zone_id=237, lookback=24)
 print(f"LSTM: RMSE={metrics['rmse']:.2f}, R²={metrics['r2']:.4f}")
 ```
 
-### Expected Performance
-| Metric | CPU | GPU | Speedup |
-|--------|-----|-----|---------|
-| Training (50 epochs) | 25 min | **2.5 min** | **10x** |
-| RMSE | 13 | 13 | - |
-| R² | **0.93** | **0.93** | - |
-
-**LSTM outperforms traditional ML!** 🎉
-
 ---
 
 ## ✅ Testing (30% of Grade!)
 
 ### Test Categories
 
-#### 1. Unit Tests
+| Category | File | Description |
+|----------|------|-------------|
+| Unit Tests | `test_pipeline.py` | Schema, cleaning, features |
+| Integration Tests | `test_integration.py` | End-to-end pipeline |
+| Data Quality | `test_pipeline.py` | Completeness, consistency |
+
+### Run Tests
+
 ```bash
-pytest tests/test_pipeline.py -v
+# All tests
+make test
+
+# Unit tests only
+make test-unit
+
+# Integration tests only
+make test-integration
+
+# With coverage report
+make test-coverage
 ```
 
-Tests:
-- Data schema validation
-- Cleaning logic
-- Feature engineering
-- Outlier detection
+### Test Coverage
 
-#### 2. Integration Tests
 ```bash
-pytest tests/test_integration.py -v
+pytest --cov=src --cov=ml --cov=dl --cov-report=html
 ```
 
-Tests:
-- End-to-end pipeline
-- Lambda vs Kappa consistency
-- Model pipeline execution
+---
 
-#### 3. Data Quality
-```bash
-make test-quality
-```
+## ⚙️ Configuration
 
-Checks:
-- ✅ **Completeness**: No missing values
-- ✅ **Consistency**: Logical constraints
-- ✅ **Uniqueness**: No duplicates
-- ✅ **Accuracy**: Value ranges
+All configuration is centralized in `env/config.yaml`:
 
-#### 4. Model Validation
-```bash
-make test-models
-```
+```yaml
+# Paths (supports both flat and nested format)
+paths:
+  lake: "lake"
+  bronze: "lake/bronze"
+  silver: "lake/silver"
+  gold: "lake/gold"
+  data: "data"
 
-Validates:
-- Model files exist
-- Predictions reasonable
-- Performance thresholds met
+# Data Quality
+data_quality:
+  min_trip_duration: 1
+  max_trip_duration: 180
+  min_trip_distance: 0.1
+  max_trip_distance: 100
 
-### Run All Tests
+# Spark
+spark:
+  master: "local[*]"
+  driver_memory: "4g"
 
-```bash
-pytest -v --cov=src --cov=ml --cov=dl
+# ML Configuration
+ml:
+  test_split: 0.2
+  random_seed: 42
+
+# DL Configuration  
+dl:
+  use_gpu: true
+  epochs: 50
+  lookback: 24
 ```
 
 ---
 
 ## 📊 Results
 
-### ML Model Comparison
+### Data Pipeline
 
-| Model | RMSE | MAE | R² | Best For |
-|-------|------|-----|-----|----------|
-| Linear Regression | 22.3 | 18.1 | 0.78 | Baseline |
-| Random Forest | 17.2 | 13.5 | 0.88 | Interpretability |
-| Gradient Boosting | 15.4 | 11.8 | 0.91 | Accuracy |
-| **LSTM (GPU)** | **13.1** | **9.7** | **0.93** | **Best** |
+| Layer | Records | Retention |
+|-------|---------|-----------|
+| Bronze | 38.7M | 100% |
+| Silver | 37.0M | 95.4% |
+| Gold | 37.0M | 100% |
 
-### Performance Benchmarks
+### Model Performance (Expected)
 
-#### CPU vs GPU (Deep Learning)
-- Training: **10x faster** on GPU
-- Inference: **10x faster** on GPU
-- Cost: GPU more expensive but worth it for production
-
-#### Lambda vs Kappa
-- **Lambda**: Higher accuracy (100%), higher latency
-- **Kappa**: Lower latency (<1min), slightly lower accuracy (97%)
-- **Hybrid**: Use both for different use cases
+| Model | RMSE | R² | Training Time |
+|-------|------|-----|---------------|
+| Linear Regression | ~22 | ~0.78 | ~30 sec |
+| Random Forest | ~17 | ~0.88 | ~5 min |
+| Gradient Boosting | ~15 | ~0.91 | ~8 min |
+| LSTM (GPU) | ~13 | ~0.93 | ~2.5 min |
 
 ---
 
 ## 📚 Topics Coverage
 
-| Topic | Implementation |
-|-------|----------------|
-| **Parallel Computing** | ✅ Spark distributed processing |
-| **GPU Computing** | ✅ TensorFlow GPU acceleration |
-| **Cloud Computing** | ✅ Docker containerization |
-| **Hadoop/Spark** | ✅ Lambda + Kappa architectures |
-| **Machine Learning** | ✅ Spark MLlib (RF, GBT, LR) |
-| **Deep Learning** | ✅ LSTM time series forecasting |
-
----
-
-## 📝 Evaluation Alignment
-
-| Component | Weight | Status |
-|-----------|--------|--------|
-| Abstract & Introduction | 5% | ✅ Complete |
-| Problem Definition | 5% | ✅ Clear objectives |
-| Literature Review | 5% | ✅ References |
-| **Architecture & Implementation** | **25%** | ✅ **Complete pipeline** |
-| **Validation & Testing** | **30%** | ✅ **Comprehensive tests** |
-| Conclusions | 10% | ✅ Analysis included |
-| Presentation & Defense | 20% | ✅ Documentation ready |
+| Course Topic | Implementation |
+|--------------|----------------|
+| Parallel Computing | ✅ Spark distributed processing |
+| GPU Computing | ✅ TensorFlow GPU acceleration |
+| Cloud Computing | ✅ Docker containerization |
+| Hadoop/Spark | ✅ Lambda + Kappa architectures |
+| Machine Learning | ✅ Spark MLlib (RF, GBT, LR) |
+| Deep Learning | ✅ LSTM time series forecasting |
 
 ---
 
 ## 🎓 AI Assistance Disclosure
 
-Developed with assistance from:
-- GitHub Copilot (code completion)
-- ChatGPT (architecture, documentation)
-- TensorFlow & PySpark documentation
+This project was developed with assistance from:
+- GitHub Copilot (code completion and suggestions)
+- ChatGPT (architecture planning, documentation)
 
-All code reviewed and validated by the team.
+All code has been reviewed, tested, and validated by the team.
 
 ---
 
@@ -345,29 +398,33 @@ All code reviewed and validated by the team.
 **Students**: 1050497, 1050532  
 **Course**: LABGDD - Big Data Laboratory  
 **Institution**: ISEP - MEI Data Engineering  
-**Year**: 2025/2026
+**Year**: 2024/2025
 
 ---
 
 ## 📄 License
 
-Academic project for educational purposes.
+Academic project for educational purposes only.
 
 ---
 
-## 📞 Support
+## 🔗 Quick Reference
 
-Questions? Contact the laboratory class teacher.
+```bash
+# Common commands
+make metrics          # View data statistics
+make figures          # Generate visualizations
+make ml               # Train ML models
+make dl               # Train DL model
+make test             # Run all tests
+make test-coverage    # Tests with coverage
 
----
+# Pipeline commands
+make silver           # Bronze → Silver
+make gold             # Silver → Gold
+make kappa_start      # Start streaming
 
-## 🔗 Related Files
-
-- **Original Project 1 README**: `README_PROJECT1.md`
-- **Jupyter Notebook**: `notebooks/ML_DL_Analysis.ipynb`
-- **Test Documentation**: `tests/README.md` (to be created)
-- **API Documentation**: See docstrings in source files
-
----
-
-**⚡ Quick Start**: `make all && pytest -v`
+# Cleanup
+make clean            # Remove checkpoints
+make clean-models     # Remove trained models
+```

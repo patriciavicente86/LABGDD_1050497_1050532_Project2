@@ -19,6 +19,34 @@ def read_cfg(path):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
+
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        normalized = {
+            "bronze_path": paths.get("bronze", "lake/bronze"),
+            "silver_path": paths.get("silver", "lake/silver"),
+            "gold_path": paths.get("gold", "lake/gold"),
+        }
+    else:
+        # Old flat format - use as-is
+        normalized = {
+            "bronze_path": cfg.get("bronze_path", "lake/bronze"),
+            "silver_path": cfg.get("silver_path", "lake/silver"),
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+        }
+    
+    # Copy over common keys
+    normalized["years"] = cfg.get("years", [])
+    normalized["services"] = cfg.get("services", [])
+    
+    return normalized
+
 def read_bronze(spark, bronze_root, services, years):
     """
     Read Bronze parquet files for the given services and years.
@@ -51,6 +79,9 @@ def read_bronze(spark, bronze_root, services, years):
     return reduce(lambda a,b: a.unionByName(b, allowMissingColumns=True), dfs)
 
 def main(cfg):
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
+    
     # Initialize Spark
     spark = SparkSession.builder.appName("NYC Taxi - Metrics").getOrCreate()
 

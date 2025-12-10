@@ -15,6 +15,25 @@ def parse_args():
     p.add_argument("--config", required=True)
     return p.parse_args()
 
+
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        return {
+            "gold_path": paths.get("gold", "lake/gold"),
+        }
+    else:
+        # Old flat format - use as-is
+        return {
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+        }
+
+
 def main(cfg):
     """
     Main routine:
@@ -25,6 +44,9 @@ def main(cfg):
     - compute counts of overlapping keys, exact matches, percentage exact, and MAE of trip counts
     - print a small summary dict
     """
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
+    
     # Start a Spark session
     spark = SparkSession.builder.appName("NYC Taxi - Lambda vs Kappa Compare").getOrCreate()
 

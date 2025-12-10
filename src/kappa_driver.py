@@ -45,6 +45,47 @@ def read_cfg(path):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
+
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys: bronze_path, silver_path, gold_path, etc.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        normalized = {
+            "bronze_path": paths.get("bronze", "lake/bronze"),
+            "silver_path": paths.get("silver", "lake/silver"),
+            "gold_path": paths.get("gold", "lake/gold"),
+            "bronze_stream_path": paths.get("bronze_stream", "lake/bronze_stream"),
+            "checkpoint_path": paths.get("checkpoints", "checkpoints/kappa_zone_hour"),
+        }
+    else:
+        # Old flat format - use as-is
+        normalized = {
+            "bronze_path": cfg.get("bronze_path", "lake/bronze"),
+            "silver_path": cfg.get("silver_path", "lake/silver"),
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+            "bronze_stream_path": cfg.get("bronze_stream_path", cfg.get("bronze_path", "lake/bronze") + "_stream"),
+            "checkpoint_path": cfg.get("checkpoint_path", "checkpoints/kappa_zone_hour"),
+        }
+    
+    # Copy over common keys
+    normalized["years"] = cfg.get("years", [])
+    normalized["services"] = cfg.get("services", [])
+    
+    # Normalize data quality thresholds (new format uses 'data_quality', old uses 'dq')
+    dq = cfg.get("data_quality", cfg.get("dq", {}))
+    normalized["dq"] = {
+        "max_trip_hours": dq.get("max_trip_hours", dq.get("max_trip_duration", 360) / 60),
+        "min_distance_km": dq.get("min_distance_km", dq.get("min_trip_distance", 0.1) * 1.60934),
+        "min_total_amount": dq.get("min_total_amount", dq.get("min_fare", 0)),
+    }
+    
+    return normalized
+
+
 def run(cfg):
     """
     Main pipeline:
@@ -55,10 +96,13 @@ def run(cfg):
     5. Write aggregates using foreachBatch (micro-batch overwrite per partition).
     """
     spark = get_spark()
+    
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
 
     # Paths and config extraction
     bronze_root   = Path(cfg["bronze_path"])                               # static bronze for schema inference
-    bronze_stream = Path(cfg.get("bronze_stream_path", cfg["bronze_path"] + "_stream"))
+    bronze_stream = Path(cfg["bronze_stream_path"])
     bronze_stream.mkdir(parents=True, exist_ok=True)                        # ensure stream path exists locally (no-op on distributed FS)
     gold          = Path(cfg["gold_path"])
     checkpoint    = cfg.get("checkpoint_path", "checkpoints/kappa_zone_hour")

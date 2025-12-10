@@ -1,0 +1,67 @@
+# --- Spark data lake ---
+lake/
+*.parquet
+*.orc
+*.avro
+*.log
+
+# --- Spark checkpoints/temp files ---
+spark-warehouse/
+metastore_db/
+.derby.log
+_temp/
+*.crc
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.eggs/
+.venv/
+venv/
+
+# --- Notebooks and checkpoints ---
+.ipynb_checkpoints/
+*.ipynb~
+
+# --- VSCode ---
+.vscode/
+*.code-workspace
+
+# --- Docker ---
+*.pid
+*.tar
+.env
+.envrc
+
+# --- OS/system files ---
+.DS_Store
+Thumbs.db
+
+# --- Reports ---
+reports/*
+
+# --- Checkpoints ---
+checkpoints/
+
+# --- ML/DL Models (Project 2 specific) ---
+models/
+*.h5
+*.keras
+*.pb
+*.ckpt*
+
+# --- TensorFlow/Keras ---
+logs/
+tensorboard/
+
+# --- Test coverage ---
+.coverage
+htmlcov/
+.pytest_cache/
+
+# --- Temporary files ---
+tmp/
+*.tmp

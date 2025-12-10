@@ -17,7 +17,29 @@ def read_cfg(path):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
+
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        return {
+            "gold_path": paths.get("gold", "lake/gold"),
+        }
+    else:
+        # Old flat format - use as-is
+        return {
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+        }
+
+
 def main(cfg):
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
+    
     # Create a Spark session for reading parquet data.
     spark = SparkSession.builder.appName("NYC Taxi - Figures").getOrCreate()
 

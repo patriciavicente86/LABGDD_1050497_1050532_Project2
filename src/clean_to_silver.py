@@ -29,9 +29,54 @@ def read_cfg(path):
         return yaml.safe_load(f)
 
 
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys: bronze_path, silver_path, gold_path, data_root, etc.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        normalized = {
+            "bronze_path": paths.get("bronze", "lake/bronze"),
+            "silver_path": paths.get("silver", "lake/silver"),
+            "gold_path": paths.get("gold", "lake/gold"),
+            "data_root": paths.get("data", "data"),
+            "bronze_stream_path": paths.get("bronze_stream", "lake/bronze_stream"),
+            "checkpoint_path": paths.get("checkpoints", "checkpoints"),
+        }
+    else:
+        # Old flat format - use as-is
+        normalized = {
+            "bronze_path": cfg.get("bronze_path", "lake/bronze"),
+            "silver_path": cfg.get("silver_path", "lake/silver"),
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+            "data_root": cfg.get("data_root", "data"),
+            "bronze_stream_path": cfg.get("bronze_stream_path", "lake/bronze_stream"),
+            "checkpoint_path": cfg.get("checkpoint_path", "checkpoints"),
+        }
+    
+    # Copy over common keys
+    normalized["years"] = cfg.get("years", [])
+    normalized["services"] = cfg.get("services", [])
+    
+    # Normalize data quality thresholds (new format uses 'data_quality', old uses 'dq')
+    dq = cfg.get("data_quality", cfg.get("dq", {}))
+    normalized["dq"] = {
+        "max_trip_hours": dq.get("max_trip_hours", dq.get("max_trip_duration", 360) / 60),  # convert minutes to hours if needed
+        "min_distance_km": dq.get("min_distance_km", dq.get("min_trip_distance", 0.1) * 1.60934),  # convert miles to km if needed
+        "min_total_amount": dq.get("min_total_amount", dq.get("min_fare", 0)),
+    }
+    
+    return normalized
+
+
 def run(cfg):
     # Main logic: read bronze data, clean it, deduplicate and write silver data.
     spark = get_spark()
+    
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
 
     # Root directories for Bronze and Silver layers (can be absolute or relative).
     bronze_root = Path(cfg["bronze_path"])   # e.g. ./lake/bronze

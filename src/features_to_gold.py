@@ -30,9 +30,40 @@ def read_cfg(path):
         return yaml.safe_load(f)
 
 
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys: bronze_path, silver_path, gold_path, etc.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        normalized = {
+            "bronze_path": paths.get("bronze", "lake/bronze"),
+            "silver_path": paths.get("silver", "lake/silver"),
+            "gold_path": paths.get("gold", "lake/gold"),
+        }
+    else:
+        # Old flat format - use as-is
+        normalized = {
+            "bronze_path": cfg.get("bronze_path", "lake/bronze"),
+            "silver_path": cfg.get("silver_path", "lake/silver"),
+            "gold_path": cfg.get("gold_path", "lake/gold"),
+        }
+    
+    # Copy over common keys
+    normalized["years"] = cfg.get("years", [])
+    normalized["services"] = cfg.get("services", [])
+    
+    return normalized
+
+
 def run(cfg):
     # Main ETL function. Expects cfg keys: silver_path, gold_path, services (list).
     spark = get_spark()
+    
+    # Normalize config to support both old and new formats
+    cfg = normalize_config(cfg)
 
     # Root directories for silver (input) and gold (output)
     silver_root = Path(cfg["silver_path"])   # e.g., ./lake/silver

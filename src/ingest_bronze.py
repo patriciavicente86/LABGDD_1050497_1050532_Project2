@@ -27,12 +27,40 @@ def resolve_path(repo_root: Path, p: str) -> str:
     pth = Path(p)
     return str((repo_root / pth).resolve()) if not pth.is_absolute() else str(pth)
 
+
+def normalize_config(cfg):
+    """
+    Normalize config to support both old flat format and new nested format.
+    Returns a dict with flat keys.
+    """
+    # Check if using new nested format (has 'paths' key)
+    if "paths" in cfg:
+        paths = cfg["paths"]
+        normalized = {
+            "data_root": paths.get("data", "data"),
+            "bronze_path": paths.get("bronze", "lake/bronze"),
+        }
+    else:
+        # Old flat format - use as-is
+        normalized = {
+            "data_root": cfg.get("data_root", "data"),
+            "bronze_path": cfg.get("bronze_path", "lake/bronze"),
+        }
+    
+    # Copy over common keys
+    normalized["years"] = cfg.get("years", [])
+    normalized["services"] = cfg.get("services", [])
+    
+    return normalized
+
+
 def main(config_path: str):
     # repo_root is the project root (two levels up from this file)
     repo_root = Path(__file__).resolve().parents[1]
 
     # Load YAML configuration (expects keys: data_root, bronze_path, years, services)
-    cfg = yaml.safe_load(open(config_path))
+    raw_cfg = yaml.safe_load(open(config_path))
+    cfg = normalize_config(raw_cfg)
 
     # Resolve configured paths relative to repo_root if needed
     data_root = resolve_path(repo_root, cfg["data_root"])
